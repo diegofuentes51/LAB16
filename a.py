@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score
 # Obtener el dataset
 adult = fetch_ucirepo(id=2)
 
-# Datos (como dataframes de pandas)
+# Datos 
 X = adult.data.features
 y = adult.data.targets
 
@@ -22,19 +22,19 @@ y = adult.data.targets
 numeric_cols = X.select_dtypes(include=['float64', 'int64']).columns
 X[numeric_cols] = X[numeric_cols].fillna(X[numeric_cols].mean())
 
-# Imputar las columnas categóricas con la moda (valor más frecuente)
+# Imputar las columnas categóricas con la moda 
 categorical_cols = X.select_dtypes(include=['object']).columns
 for col in categorical_cols:
     X[col] = X[col].fillna(X[col].mode()[0])
 
-# Convertir las variables categóricas a dummies (codificación one-hot)
+# Convertir las variables categóricas a dummies 
 X = pd.get_dummies(X, drop_first=True)
 
 # Escalar las características numéricas
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Dividir el conjunto de datos en entrenamiento y prueba (80% para entrenamiento, 20% para prueba)
+# Dividir el conjunto de datos en entrenamiento y prueba 
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
 # Definir los modelos
@@ -46,7 +46,7 @@ models = {
     'Random Forest': RandomForestClassifier()
 }
 
-# Definir las grillas de hiperparámetros para GridSearchCV (reducción de complejidad para un entrenamiento más rápido)
+# Definir las grillas de hiperparámetros para GridSearchCV 
 param_grids = {
     'KNN': {'n_neighbors': [3, 5]},  
     'SVM': {'C': [0.1, 1], 'kernel': ['linear']},  
@@ -55,11 +55,11 @@ param_grids = {
     'Random Forest': {'n_estimators': [50], 'max_depth': [5, 10]}  
 }
 
-# Búsqueda en cuadrícula y evaluación de cada modelo (usar paralelización para acelerar la búsqueda)
+# Búsqueda en cuadrícula y evaluación de cada modelo 
 best_models = {}
 for name, model in models.items():
     print(f"Entrenando {name}...")
-    grid_search = GridSearchCV(model, param_grids[name], cv=3, n_jobs=-1)  # Usar validación cruzada con 3 pliegues y paralelizar
+    grid_search = GridSearchCV(model, param_grids[name], cv=3, n_jobs=-1)  
     grid_search.fit(X_train, y_train)
     best_models[name] = grid_search.best_estimator_
     y_pred = grid_search.best_estimator_.predict(X_test)
@@ -67,7 +67,6 @@ for name, model in models.items():
     print(f"Mejores parámetros para {name}: {grid_search.best_params_}")
     print(f"Precisión para {name}: {accuracy}\n")
 
-# Opcionalmente, también puedes imprimir el mejor modelo (por ejemplo, Random Forest o el que tenga la mejor precisión)
 best_model_name = max(best_models, key=lambda x: accuracy_score(y_test, best_models[x].predict(X_test)))
 best_model = best_models[best_model_name]
 print(f"El mejor modelo es: {best_model_name} con precisión: {accuracy_score(y_test, best_model.predict(X_test))}")
